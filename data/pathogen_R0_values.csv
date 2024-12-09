@@ -1,0 +1,19 @@
+Pathogen, Archetype, Basic reproduction number
+COVID-19 (Wild type), 3, 2.7
+COVID-19 (Alpha), 3, 4.5
+COVID-19 (Delta), 3, 5.1
+COVID-19 (Omicron), 3, 9.5
+Ebola, 1, 2.0
+Marburg, 1, 0.8
+Lassa, 1, 1.2
+Nipah, 1, 0.3
+Zika, 2, 3.0
+Mpox, 1, 1.9
+H1N1 (1918 pandemic), 3, 1.8
+H2N2, 3, 1.7
+H3N2, 3, 1.8
+H1N1 (2009 pandemic), 3, 1.5
+H5N1, 4, 0.2
+SARS, 3, 1.8
+MERS, 4, 0.95
+

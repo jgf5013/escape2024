@@ -1,0 +1,26 @@
+Package: escape2024
+Title: Code accompanying the deliverable D4.1 of the ESCAPE project, 2024 
+Version: 0.0.1
+Authors@R: 
+     c(
+     person("Ka Yin", "Leung", email = "ka.yin.leung@rivm.nl", role = c("aut", "cre")),
+     person("Fuminari", "Miura", email = "fuminari.miura@rivm.nl", role = c("aut")))
+Description: The package simulates SEIR epidemics for the mass action model and 
+  configuration network model that are described by ordinary differential equations. 
+  It contains functionality to calculates theoretical basic reproduction number and 
+  final size for the epidemic models. Scripts are included to produce the results presented in 
+  the 2024 deliverable D4.1 of the ESCAPE project. 
+License: EUPL v1.2 + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    deSolve,
+    dplyr,
+    ggplot2,
+    rootSolve,
+    tidyr
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+title: Code accompanying the deliverable D4.1 of the ESCAPE project, 2024
+message: >-
+  If you use this software, please cite it using the
+metadata from this file.
+type: software
+authors:
+  - family-names: "National Institute for Public Health and the Environment (RIVM)"
+given-names: ""
+date-released: 2024-11-28
+repository-code: >-
+  "https://github.com/rivm-syso/escape2024"
+license: EUPL v1.2
