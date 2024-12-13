@@ -5,7 +5,7 @@ USER ${NB_USER}
 
 
 
-RUN wget https://github.com/rivm-syso/escape2024/raw/main/DESCRIPTION 
+RUN wget https://github.com/rivm-syso/escape2024/raw/main/DESCRIPTION \
  && R -e "options(repos = list(CRAN = 'http://mran.revolutionanalytics.com/snapshot/2024-12-13/'))" \
  && R -e "devtools::install_deps()" \
  # install escape2024 package
