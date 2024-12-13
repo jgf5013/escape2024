@@ -4,6 +4,9 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
+<!-- badges: start -->
+  [![Launch Rstudio Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rivm-syso/escape2024/main?urlpath=rstudio)
+  <!-- badges: end -->
 
 ```{r}
 #| echo: false
@@ -18,7 +21,7 @@ knitr::opts_chunk$set(
 
 ## Description
 
-This repository contains parts of the code used for the deliverable D4.1 of the [ESCAPE project](https://www.escapepandemics.com/), 2024. The code is written primarily in the programming language R. The repository contains code and examples of the estimators for the latent and infectious period of section 3 and code to produce table 1, 2 and figures 4, 5. The package simulates deterministic SEIR epidemics for the mass action model and configuration network model that are described by ordinary differential equations. The code contains functionality to calculates theoretical basic reproduction number and final size for the epidemic models. The theory underlying the SEIR configuration network model are described in [1].
+This repository contains parts of the code used for the deliverable D4.1 of the [ESCAPE project](https://www.escapepandemics.com/), 2024. The code is written primarily in the programming language R. The repository contains code and examples of the estimators for the latent and infectious period of section 3 and code to produce table 1, 2 and figures 4, 5. The package simulates deterministic SEIR epidemics for the mass action model and configuration network model that are described by ordinary differential equations. The code contains functionality to calculates theoretical basic reproduction number and final size for the epidemic models. The theory underlying the SEIR configuration network model are described in [1]. To build an interactive Rstudio environment to reproduce the results, click the binder badge at the top of the README.
 
 [1] Leung, K.Y., Diekmann, O. Dangerous connections: on binding site models of infectious disease dynamics. *J. Math. Biol.* 74, 619–671 (2017). https://doi.org/10.1007/s00285-016-1037-x
 

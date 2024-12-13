@@ -1,5 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+<!-- badges: start -->
+
+[![Launch Rstudio
+Binder](http://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/rivm-syso/escape2024/main?urlpath=rstudio)
+<!-- badges: end -->
 
 # escape2024
 
@@ -15,7 +20,9 @@ mass action model and configuration network model that are described by
 ordinary differential equations. The code contains functionality to
 calculates theoretical basic reproduction number and final size for the
 epidemic models. The theory underlying the SEIR configuration network
-model are described in \[1\].
+model are described in \[1\]. To build an interactive Rstudio
+environment to reproduce the results, click the binder badge at the top
+of the README.
 
 \[1\] Leung, K.Y., Diekmann, O. Dangerous connections: on binding site
 models of infectious disease dynamics. *J. Math. Biol.* 74, 619–671
