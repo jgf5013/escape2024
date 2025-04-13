@@ -27,7 +27,6 @@
   return(fun)
 }
 
-
 #' Derivative F'(tau)
 #'
 #' @param transmission_rate
