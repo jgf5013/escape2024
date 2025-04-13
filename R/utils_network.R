@@ -54,7 +54,6 @@
   return(fun)
 }
 
-
 #' Title
 #'
 #' @param infection
