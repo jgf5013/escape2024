@@ -27,7 +27,7 @@ if (ci_on("github_actions")) {
     add_step(step_pkgdown())
 
   get_stage("wasm") %>%
-    add_step(step_install_cran(c("r-wasm/wasm"))) %>% # Ensure wasm is available
+    add_step(step_install_cran(c("r-wasm/wasm", "deSolve", "ggplot2", "rootSolve", "tidyr"))) %>%
     add_step(step_script("./tools/build_wasm.R"))
 
   run_pipeline()
