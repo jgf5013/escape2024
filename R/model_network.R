@@ -121,7 +121,7 @@ model_network_sir <- function(degree_distribution = c("poisson", "negative_binom
   )
 
   # simulate outbreak
-  sir_out <- deSolve::ode(
+  sir_out <- PBSddesolve::dde(
     y = initial_values,
     times = 0:time_end,
     func = .ode_model_network_sir,
@@ -257,7 +257,7 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
   )
 
   # simulate outbreak
-  seir_out <- deSolve::ode(
+  seir_out <- PBSddesolve::dde(
     y = initial_values,
     times = 0:time_end,
     func = .ode_model_network_seir,

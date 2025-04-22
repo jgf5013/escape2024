@@ -39,7 +39,7 @@ model_reference <- function(
   )
 
   # simulate outbreak
-  seir_out <- deSolve::ode(
+  seir_out <- PBSddesolve::dde(
     y = initial_values,
     times = seq(0, time_end, by = increment),
     func = .ode_model_reference,
