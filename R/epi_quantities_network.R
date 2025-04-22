@@ -90,9 +90,9 @@ theory_network_final_size <- function(.params, .degree, .infection, .fraction = 
   } else if (.degree$degree_distribution %in% c("poisson", "negative_binomial", "constant", "geometric")) {
     # lim_{tau-> infinity} F(tau) as function of infection parameters
     f_inf <- .kernel_captial_curly_f_inf_limit(.infection,
-      transmission_rate = .params$transmission_rate,
-      infectiousness_rate = .params$infectiousness_rate,
-      recovery_rate = .params$recovery_rate
+                                               transmission_rate = .params$transmission_rate,
+                                               infectiousness_rate = .params$infectiousness_rate,
+                                               recovery_rate = .params$recovery_rate
     )
     # initial condition for x given seed infected
     x0 <- initial_x(.params$seed_infected, .degree)
@@ -100,10 +100,8 @@ theory_network_final_size <- function(.params, .degree, .infection, .fraction = 
     .root_fun <- function(x) {
       f_inf + (1 - f_inf) * helper_g_function(x = x, .degree) - x
     }
-    x_final <- rootSolve::uniroot.all(.root_fun, interval = c(0, 1), tol = .Machine$double.eps)
-    # select nontrivial root
-    trivial_sol <- 1
-    x_final <- x_final[x_final < trivial_sol]
+    # hack: use base uniroot and avoid trivial solution 1 from root finding
+    x_final <- uniroot(.root_fun, interval = c(0, 1-1E-6), tol = .Machine$double.eps)$root
     # final number of susceptibles
     s_final <- probability_generating_function(x = x_final, .degree)
     # take into account initially infected fraction

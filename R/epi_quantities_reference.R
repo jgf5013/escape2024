@@ -55,7 +55,7 @@ theory_reference_final_size <- function(.params = NULL, r_0 = NULL, .fraction = 
     # initial fraction susceptible
     s_0 <- 1 - .params$seed_infected
   } else if ((!is.null(.params) & !is.null(r_0)) |
-    (is.null(.params) & is.null(r_0))) {
+             (is.null(.params) & is.null(r_0))) {
     stop("provide either parameters or R_0, not both")
   }
 
@@ -69,13 +69,8 @@ theory_reference_final_size <- function(.params = NULL, r_0 = NULL, .fraction = 
       # s(t) = 1-S(t)/S_0, S0 = initial number susceptible population
       log(s) - log(s_0) - r_0 * (s - 1)
     }
-    final <- rootSolve::uniroot.all(.root_fun, interval = c(0, 1), tol = .Machine$double.eps)
-    # there should be exactly one root between 0 and 1 if s_0 != 1 and two roots
-    # if s_0 == 1 (one of which is the trivial root final = 1)
-    stopifnot(length(final) == 1 | (length(final) == 2 & 1 %in% final))
-    if (length(final) == 2) {
-      final <- final[final != 1]
-    }
+    # hack: use base uniroot and avoid trivial solution 1 from root finding
+    final <- uniroot(.root_fun, interval = c(0, 1-1E-6), tol = .Machine$double.eps)$root
     # final infected fraction s(0) - s(oo)
     final <- s_0 - final
     if (!.fraction) { # convert into population number
