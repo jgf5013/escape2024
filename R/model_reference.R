@@ -38,25 +38,50 @@ model_reference <- function(
     R = 0
   )
 
-  # simulate outbreak
-  seir_out <- PBSddesolve::dde(
-    y = initial_values,
-    times = seq(0, time_end, by = increment),
-    func = .ode_model_reference,
-    parms = params
-  )
+  # simulate outbreak step-by-step and stream results
+  results <- data.frame()
+  current_state <- initial_values
+
+  print("Starting simulation...")
+  for (t in seq(0, time_end, by = increment)) {
+    step_result <- PBSddesolve::dde(
+      y = current_state,
+      times = c(t, t + increment),
+      func = .ode_model_reference,
+      parms = params
+    )
+
+    # Extract the last row as the current state and ensure it's a numeric vector
+    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
+
+    # Ensure current_state is a named vector
+    names(current_state) <- names(initial_values)
+
+    # Print the current time and state as a JSON object
+    print(jsonlite::toJSON(list(time = t, state = as.list(current_state)), pretty = TRUE))
+
+    # Append to results
+    results <- rbind(results, c(time = t, current_state))
+
+    # Optionally stream partial results
+    if (exists("stream_callback") && is.function(stream_callback)) {
+      stream_callback(data.frame(time = t, t(current_state)))
+    }
+  }
+
   # convert class of output and type of
-  seir_out <- seir_out |>
+  results <- results |>
     as.data.frame() |>
     # change deSolve classes to numeric
     type.convert(as.is = TRUE)
 
   # add parameters as attribute
-  attr(seir_out, "parameters") <- params
-  attr(seir_out, "infection") <- "SEIR"
+  attr(results, "parameters") <- params
+  attr(results, "infection") <- "SEIR"
 
-  return(seir_out)
+  return(results)
 }
+print("Simulation completed.")
 
 
 #' Title
@@ -77,8 +102,6 @@ model_reference <- function(
     dI <- infectiousness_rate * E - recovery_rate * I
     dR <- recovery_rate * I
     # output
-    return(list(c(dS, dE, dI, dR),
-      incidence = transmission_rate * S * I / population_size
-    ))
+    return(list(c(dS, dE, dI, dR)))
   })
 }
