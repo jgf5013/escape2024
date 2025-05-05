@@ -83,24 +83,24 @@ model_reference <- function(
 }
 
 
-# #' Title
-# #'
-# #' @param t
-# #' @param current_state
-# #' @param params
-# #'
-# #' @return
-# #' @export
-# #'
-# #' @examples
-# .ode_model_reference <- function(t, current_state, params) {
-#   with(as.list(c(current_state, params)), {
-#     # ODEs
-#     dS <- -transmission_rate * S * I / population_size
-#     dE <- transmission_rate * S * I / population_size - infectiousness_rate * E
-#     dI <- infectiousness_rate * E - recovery_rate * I
-#     dR <- recovery_rate * I
-#     # output
-#     return(list(c(dS, dE, dI, dR)))
-#   })
-# }
+#' Title
+#'
+#' @param t
+#' @param current_state
+#' @param params
+#'
+#' @return
+#' @export
+#'
+#' @examples
+.ode_model_reference <- function(t, current_state, params) {
+  with(as.list(c(current_state, params)), {
+    # ODEs
+    dS <- -transmission_rate * S * I / population_size
+    dE <- transmission_rate * S * I / population_size - infectiousness_rate * E
+    dI <- infectiousness_rate * E - recovery_rate * I
+    dR <- recovery_rate * I
+    # output
+    return(list(c(dS, dE, dI, dR)))
+  })
+}
