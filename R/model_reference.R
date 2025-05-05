@@ -43,6 +43,7 @@ model_reference <- function(
   current_state <- initial_values
 
   print("Starting simulation...")
+  buffer <- list()  # Buffer to store results temporarily
   for (t in seq(0, time_end, by = increment)) {
     step_result <- PBSddesolve::dde(
       y = current_state,
@@ -57,16 +58,14 @@ model_reference <- function(
     # Ensure current_state is a named vector
     names(current_state) <- names(initial_values)
 
-    # Print the current time and state as a JSON object
-    print(jsonlite::toJSON(list(time = t, state = as.list(current_state)), pretty = TRUE))
+    # Collect the current time and state as a JSON object
+    buffer[[length(buffer) + 1]] <- jsonlite::toJSON(list(time = t, state = as.list(current_state)), pretty = TRUE)
 
-    # # Append to results
-    # results <- rbind(results, c(time = t, current_state))
-
-    # # Optionally stream partial results
-    # if (exists("stream_callback") && is.function(stream_callback)) {
-    #   stream_callback(data.frame(time = t, t(current_state)))
-    # }
+    # Flush the buffer to ensure ordered printing
+    for (result in buffer) {
+      print(result)
+    }
+    buffer <- list()  # Clear the buffer after flushing
   }
 
   # convert class of output and type of
