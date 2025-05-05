@@ -60,13 +60,13 @@ model_reference <- function(
     # Print the current time and state as a JSON object
     print(jsonlite::toJSON(list(time = t, state = as.list(current_state)), pretty = TRUE))
 
-    # Append to results
-    results <- rbind(results, c(time = t, current_state))
+    # # Append to results
+    # results <- rbind(results, c(time = t, current_state))
 
-    # Optionally stream partial results
-    if (exists("stream_callback") && is.function(stream_callback)) {
-      stream_callback(data.frame(time = t, t(current_state)))
-    }
+    # # Optionally stream partial results
+    # if (exists("stream_callback") && is.function(stream_callback)) {
+    #   stream_callback(data.frame(time = t, t(current_state)))
+    # }
   }
 
   # convert class of output and type of
@@ -79,29 +79,28 @@ model_reference <- function(
   attr(results, "parameters") <- params
   attr(results, "infection") <- "SEIR"
 
-  return(results)
+  # return(results)
 }
-print("Simulation completed.")
 
 
-#' Title
-#'
-#' @param t
-#' @param current_state
-#' @param params
-#'
-#' @return
-#' @export
-#'
-#' @examples
-.ode_model_reference <- function(t, current_state, params) {
-  with(as.list(c(current_state, params)), {
-    # ODEs
-    dS <- -transmission_rate * S * I / population_size
-    dE <- transmission_rate * S * I / population_size - infectiousness_rate * E
-    dI <- infectiousness_rate * E - recovery_rate * I
-    dR <- recovery_rate * I
-    # output
-    return(list(c(dS, dE, dI, dR)))
-  })
-}
+# #' Title
+# #'
+# #' @param t
+# #' @param current_state
+# #' @param params
+# #'
+# #' @return
+# #' @export
+# #'
+# #' @examples
+# .ode_model_reference <- function(t, current_state, params) {
+#   with(as.list(c(current_state, params)), {
+#     # ODEs
+#     dS <- -transmission_rate * S * I / population_size
+#     dE <- transmission_rate * S * I / population_size - infectiousness_rate * E
+#     dI <- infectiousness_rate * E - recovery_rate * I
+#     dR <- recovery_rate * I
+#     # output
+#     return(list(c(dS, dE, dI, dR)))
+#   })
+# }
