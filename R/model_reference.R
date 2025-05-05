@@ -43,7 +43,7 @@ model_reference <- function(
     ))
 
 
-    Sys.sleep(0.1)  # Add a delay of 1 second after each iteration
+    # Sys.sleep(0.1)  # Add a delay of 1 second after each iteration
   }
 }
 
