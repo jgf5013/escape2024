@@ -1,18 +1,3 @@
-#' Title
-#'
-#' @param r_0
-#' @param transmission_rate
-#' @param infectiousness_rate
-#' @param recovery_rate
-#' @param time_end
-#' @param increment
-#' @param population_size
-#' @param seed_infected
-#'
-#' @return
-#' @export
-#'
-#' @examples
 model_reference <- function(
     transmission_rate = 0.25,
     infectiousness_rate = 0.25,
@@ -38,12 +23,7 @@ model_reference <- function(
     R = 0
   )
 
-  # simulate outbreak step-by-step and stream results
-  results <- data.frame()
   current_state <- initial_values
-
-  print("Starting simulation...")
-  buffer <- list()  # Buffer to store results temporarily
   for (t in seq(0, time_end, by = increment)) {
     step_result <- PBSddesolve::dde(
       y = current_state,
@@ -52,46 +32,21 @@ model_reference <- function(
       parms = params
     )
 
-    # Extract the last row as the current state and ensure it's a numeric vector
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
 
-    # Ensure current_state is a named vector
     names(current_state) <- names(initial_values)
 
-    # Collect the current time and state as a JSON object
-    buffer[[length(buffer) + 1]] <- jsonlite::toJSON(list(time = t, state = as.list(current_state)), pretty = TRUE)
+    print(jsonlite::toJSON(
+      c(lapply(as.list(current_state), function(x) unname(x)), time = unname(t)),
+      pretty = FALSE,
+      auto_unbox = TRUE
+    ))
 
-    # Flush the buffer to ensure ordered printing
-    for (result in buffer) {
-      print(result)
-    }
-    buffer <- list()  # Clear the buffer after flushing
+
+    Sys.sleep(0.1)  # Add a delay of 1 second after each iteration
   }
-
-  # convert class of output and type of
-  results <- results |>
-    as.data.frame() |>
-    # change deSolve classes to numeric
-    type.convert(as.is = TRUE)
-
-  # add parameters as attribute
-  attr(results, "parameters") <- params
-  attr(results, "infection") <- "SEIR"
-
-  # return(results)
 }
 
-
-#' Title
-#'
-#' @param t
-#' @param current_state
-#' @param params
-#'
-#' @return
-#' @export
-#'
-#' @examples
 .ode_model_reference <- function(t, current_state, params) {
   with(as.list(c(current_state, params)), {
     # ODEs
