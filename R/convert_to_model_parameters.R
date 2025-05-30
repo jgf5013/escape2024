@@ -9,8 +9,8 @@
 #' @examples
 convert_to_model_parameters <- function(serial_interval, r0) {
   ## use params to calculate latent period, infectious period
-  infectiousness_rate <- 2 / serial
-  recovery_rate <- 2 / serial
+  infectiousness_rate <- 2 / serial_interval
+  recovery_rate <- 2 / serial_interval
   transmission_rate <- r0 * recovery_rate
   return(list(infectiousness_rate = infectiousness_rate,
               recovery_rate = recovery_rate,
