@@ -121,36 +121,25 @@ model_network_sir <- function(degree_distribution = c("poisson", "negative_binom
   )
 
   # simulate outbreak
-  sir_out <- PBSddesolve::dde(
-    y = initial_values,
-    times = 0:time_end,
-    func = .ode_model_network_sir,
-    parms = params
-  )
-  # convert class of output and type of classes
-  sir_out <- sir_out |>
-    as.data.frame() |>
-    # change deSolve classes to numeric
-    type.convert(as.is = TRUE)
-  # SIR dynamics
-  sir_out <- sir_out |>
-    dplyr::mutate(
-      S = probability_generating_function(x = xbar, degree_params),
-      I = (1 - S - R)
-    ) |>
-    dplyr::mutate(
-      S = population_size * S,
-      I = population_size * I,
-      R = population_size * R,
-      incidence = population_size * incidence
-    ) |>
-    dplyr::select(time, xbar, S, I, R, incidence)
+  current_state <- initial_values
+  for (t in seq(0, time_end, by = increment)) {
+    step_result <- PBSddesolve::dde(
+      y = initial_values,
+      times = 0:time_end,
+      func = .ode_model_network_sir,
+      parms = params
+    )
+    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
+    names(current_state) <- c("xbar", "R", "incidence", "S", "I")
+    current_state[c("S", "I", "R", "incidence")] <- transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]
 
-  # add parameters as attribute
-  attr(sir_out, "parameters") <- transmission_params
-  attr(sir_out, "degree") <- degree_params
-  attr(sir_out, "infection") <- "SIR"
-  return(sir_out)
+    print(jsonlite::toJSON(
+      list(state = as.list(current_state[c("S", "I", "R", "incidence")]), time = unname(t)),
+      pretty = TRUE,
+      auto_unbox = TRUE
+    ))
+    current_state <- current_state[c("xbar", "R")]
+  }
 }
 
 
@@ -170,7 +159,9 @@ model_network_sir <- function(degree_distribution = c("poisson", "negative_binom
     dR <- recovery_rate * (1 - probability_generating_function(x = xbar, params) - R)
     return(list(
       c(dxbar, dR),
-      incidence = -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar
+      c(incidence = -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar,
+        S = probability_generating_function(x = xbar, params),
+        I = 1 - probability_generating_function(x = xbar, params) - R)
     ))
   })
 }
@@ -257,33 +248,27 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
   )
 
   # simulate outbreak
-  seir_out <- PBSddesolve::dde(
-    y = initial_values,
-    times = 0:time_end,
-    func = .ode_model_network_seir,
-    parms = params
-  )
-  # convert class of output and type of classes
-  seir_out <- seir_out |>
-    as.data.frame() |>
-    # change deSolve classes to numeric
-    type.convert(as.is = TRUE)
-  # SEIR dynamics
-  seir_out <- seir_out |>
-    dplyr::mutate(
-      S = population_size * S,
-      E = population_size * E,
-      I = population_size * I,
-      R = population_size * R,
-      incidence = population_size * incidence
-    ) |>
-    dplyr::select(time, x, S, E, I, R, incidence)
+  # simulate outbreak
+  current_state <- initial_values
+  for (t in seq(0, time_end, by = increment)) {
+    step_result <- PBSddesolve::dde(
+      y = initial_values,
+      times = 0:time_end,
+      func = .ode_model_network_seir,
+      parms = params
+    )
 
-  # add parameters as attribute
-  attr(seir_out, "parameters") <- transmission_params
-  attr(seir_out, "degree") <- degree_params
-  attr(seir_out, "infection") <- "SEIR"
-  return(seir_out)
+    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
+    names(current_state) <- c("z1", "z2", "E", "I", "R", "x", "S", "incidence")
+    current_state[c("S", "E", "I", "R", "incidence")] <- transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]
+
+    print(jsonlite::toJSON(
+      list(state = as.list(current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t)),
+      pretty = TRUE,
+      auto_unbox = TRUE
+    ))
+    current_state <- current_state[c("z1", "z2", "E", "I", "R")]
+  }
 }
 
 

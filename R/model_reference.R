@@ -33,17 +33,13 @@ model_reference <- function(
     )
 
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
-
-    names(current_state) <- names(initial_values)
-
+    names(current_state) <- c("S", "E", "I", "R", "incidence")
     print(jsonlite::toJSON(
-      c(lapply(as.list(current_state), function(x) unname(x)), time = unname(t)),
-      pretty = FALSE,
+      list(state = as.list(current_state), time = unname(t)),
+      pretty = TRUE,
       auto_unbox = TRUE
     ))
-
-
-    # Sys.sleep(0.1)  # Add a delay of 1 second after each iteration
+    current_state <- current_state[c("S", "E", "I", "R")]
   }
 }
 
@@ -55,6 +51,8 @@ model_reference <- function(
     dI <- infectiousness_rate * E - recovery_rate * I
     dR <- recovery_rate * I
     # output
-    return(list(c(dS, dE, dI, dR)))
+    return(list(c(dS, dE, dI, dR),
+                incidence = transmission_rate * S * I / population_size
+    ))
   })
 }
