@@ -236,16 +236,45 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
   )
 
   # initial value specified as fraction of susceptibles that are infected (randomly in network)
+  # initial value specified as fraction of susceptibles that are infected (randomly in network)
   x0 <- initial_x(seed_infected, degree_params)
-  z0 <- 1 - helper_g_function(x0, params)
 
-  initial_values <- c(
-    z1 = 1 / infectiousness_rate * (1 - z0),
-    z2 = 1 / transmission_rate * (x0 - recovery_rate / (transmission_rate + recovery_rate)),
-    E = seed_infected,
-    I = 0,
-    R = 0
+  # linearization in disease free steady state
+  jacobian <- matrix(
+    c(
+      0, 0, 0, -transmission_rate, 0, 0, 0,
+      0, 0, 0, -transmission_rate * helper_g_function_derivative(1, degree_params), 0, 0, 0,
+      0, 0, -infectiousness_rate, transmission_rate * helper_g_function_derivative(1, degree_params), 0, 0, 0,
+      0, 0, infectiousness_rate, -(transmission_rate + recovery_rate), 0, 0, 0,
+      0, 0, 0, transmission_rate * helper_g_function(1, degree_params) * mean_degree(degree_params), -infectiousness_rate, 0, 0,
+      0, 0, 0, 0, infectiousness_rate, -recovery_rate, 0,
+      0, 0, 0, 0, 0, recovery_rate, 0
+    ),
+    byrow = TRUE, nrow = 7
   )
+
+  # disease free steady state
+  dfe <- c(1, 1, 0, 0, 0, 0, 0)
+  # eigensystem of linearization in disease free state
+  es <- eigen(jacobian)
+
+  if (sum(es$values > 0) == 1) {
+    # if there is exactly one unstable eigenvector
+    es1 <- es$vectors[, es$values > 0]
+  } else if (sum(es$values > 0) > 1) {
+    es1 <- es$vectors[, es$values > 0][, 1]
+  } else {
+    # unstable eigenvector is set to zero
+    es1 <- c(0, 0, 0, 0)
+  }
+  # normalize eigenvector such that first element is -1
+  es1 <- -es1 / es1[1]
+  # perturb DFE with unstable eigenvector
+  perturb <- dfe + (1 - x0) * es1
+  # ensure that xbar and xS remain between 0 and 1
+
+  initial_values <- perturb
+  names(initial_values) <- c("xbar", "xS", "xE", "xI", "E", "I", "R")
 
   # simulate outbreak
   # simulate outbreak
@@ -285,15 +314,14 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
 .ode_model_network_seir <- function(t, current_state, params) {
   with(as.list(c(current_state, params)), {
     if (transmission_rate > 0) {
-      x <- f_inf + transmission_rate * z2
-      dz1 <- helper_g_function(x = x, params) - infectiousness_rate * z1
-      dz2 <- infectiousness_rate * z1 - (transmission_rate + recovery_rate) * z2
+      dxbar <- -transmission_rate * xI
+      dxS <- -transmission_rate * helper_g_function_derivative(x = xbar, params) * xI
+      dxE <- transmission_rate * helper_g_function_derivative(x = xbar, params) * xI - infectiousness_rate * xE
+      dxI <- infectiousness_rate * xE - (transmission_rate + recovery_rate) * xI
 
-      dx <- transmission_rate * dz2
+      S <- probability_generating_function(x = xbar, params)
 
-      S <- probability_generating_function(x = x, params)
-
-      dE <- -helper_g_function(x = x, params) * mean_degree(params) * dx - infectiousness_rate * E
+      dE <- -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar - infectiousness_rate * E
       dI <- infectiousness_rate * E - recovery_rate * I
       dR <- recovery_rate * I
     } else if (transmission_rate == 0) {
