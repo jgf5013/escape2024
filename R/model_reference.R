@@ -1,4 +1,5 @@
 model_reference <- function(
+    simulation_id,
     transmission_rate = 0.25,
     infectiousness_rate = 0.25,
     recovery_rate = 0.2,
@@ -35,8 +36,8 @@ model_reference <- function(
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
     names(current_state) <- c("S", "E", "I", "R", "incidence")
     print(jsonlite::toJSON(
-      list(state = as.list(current_state), time = unname(t)),
-      pretty = TRUE,
+      list(state = as.list(current_state), time = unname(t), simulation_id = simulation_id),
+      pretty = FALSE,
       auto_unbox = TRUE
     ))
     current_state <- current_state[c("S", "E", "I", "R")]
