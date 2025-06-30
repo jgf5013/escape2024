@@ -236,10 +236,6 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
     f_inf = f_inf
   )
 
-  # initial value specified as fraction of susceptibles that are infected (randomly in network)
-  # initial value specified as fraction of susceptibles that are infected (randomly in network)
-  x0 <- initial_x(seed_infected, degree_params)
-
   # linearization in disease free steady state
   jacobian <- matrix(
     c(
@@ -259,25 +255,23 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
   # eigensystem of linearization in disease free state
   es <- eigen(jacobian)
 
-  if (sum(es$values > 0) == 1) {
+  if (sum(Re(es$values) > 0) == 1) {
     # if there is exactly one unstable eigenvector
-    es1 <- es$vectors[, es$values > 0]
-  } else if (sum(es$values > 0) > 1) {
-    es1 <- es$vectors[, es$values > 0][, 1]
+    es1 <- Re(es$vectors[, Re(es$values) > 0])
+  } else if (sum(Re(es$values) > 0) > 1) {
+    es1 <- Re(es$vectors[, Re(es$values) > 0][, 1])
   } else {
     # unstable eigenvector is set to zero
     es1 <- c(0, 0, 0, 0)
   }
   # normalize eigenvector such that first element is -1
-  es1 <- -es1 / es1[1]
+  es1 <- es1 / es1[5]
   # perturb DFE with unstable eigenvector
-  perturb <- dfe + (1 - x0) * es1
-  # ensure that xbar and xS remain between 0 and 1
+  perturb <- dfe + seed_infected * es1
 
   initial_values <- perturb
   names(initial_values) <- c("xbar", "xS", "xE", "xI", "E", "I", "R")
 
-  # simulate outbreak
   # simulate outbreak
   current_state <- initial_values
   for (t in seq(0, time_end, by = increment)) {
@@ -289,15 +283,14 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
     )
 
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
-    names(current_state) <- c("z1", "z2", "E", "I", "R", "x", "S", "incidence")
-    current_state[c("S", "E", "I", "R", "incidence")] <- transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]
+    names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
 
     print(jsonlite::toJSON(
-      list(state = as.list(current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t)),
+      list(state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t)),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
-    current_state <- current_state[c("z1", "z2", "E", "I", "R")]
+    current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
   }
 }
 
@@ -326,19 +319,19 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
       dI <- infectiousness_rate * E - recovery_rate * I
       dR <- recovery_rate * I
     } else if (transmission_rate == 0) {
-      dx <- 0
-      dz1 <- 0
-      dS <- 0
+      dxbar <- 0
+      dxS <- 0
+      dxE <- 0
+      dxI <- 0
       dE <- 0
       dI <- 0
-      dR <- 0
+      S <- probability_generating_function(x = xbar, params)
     }
     return(list(
-      c(dz1, dz2, dE, dI, dR),
+      c(dxbar, dxS, dxE, dxI, dE, dI, dR),
       c(
-        x = x,
         S = S,
-        incidence = -helper_g_function(x = x, params) * mean_degree(params) * dx
+        incidence = -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar
       )
     ))
   })
