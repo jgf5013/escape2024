@@ -325,12 +325,9 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
       dE <- -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar - infectiousness_rate * E
       dI <- infectiousness_rate * E - recovery_rate * I
       dR <- recovery_rate * I
-      dz1 <- 0  # Ensure dz1 is defined
-      dz2 <- 0  # Ensure dz2 is defined
     } else if (transmission_rate == 0) {
       dx <- 0
       dz1 <- 0
-      dz2 <- 0
       dS <- 0
       dE <- 0
       dI <- 0
