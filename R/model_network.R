@@ -32,6 +32,7 @@ model_network <- function(
   }
   if (infection == "SIR") {
     data <- model_network_sir(
+      simulation_id = simulation_id,
       degree_distribution = degree_distribution,
       transmission_rate = transmission_rate,
       recovery_rate = recovery_rate,
@@ -43,6 +44,7 @@ model_network <- function(
     )
   } else if (infection == "SEIR") {
     data <- model_network_seir(
+      simulation_id = simulation_id,
       degree_distribution = degree_distribution,
       transmission_rate = transmission_rate,
       infectiousness_rate = infectiousness_rate,
@@ -75,7 +77,8 @@ model_network <- function(
 #' @export
 #'
 #' @examples
-model_network_sir <- function(degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
+model_network_sir <- function(simulation_id,
+    degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
                               transmission_rate = 0.25,
                               recovery_rate = 0.25,
                               time_end = 400,
@@ -132,10 +135,11 @@ model_network_sir <- function(degree_distribution = c("poisson", "negative_binom
     )
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
     names(current_state) <- c("xbar", "R", "incidence", "S", "I")
-    current_state[c("S", "I", "R", "incidence")] <- transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]
 
     print(jsonlite::toJSON(
-      list(state = as.list(current_state[c("S", "I", "R", "incidence")]), time = unname(t), simulation_id = simulation_id),
+      list(state = as.list(transmission_params$population_size * current_state[c("S", "I", "R", "incidence")]),
+           time = unname(t),
+           simulation_id = simulation_id),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
@@ -184,7 +188,8 @@ model_network_sir <- function(degree_distribution = c("poisson", "negative_binom
 #' @export
 #'
 #' @examples
-model_network_seir <- function(degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
+model_network_seir <- function(simulation_id,
+                               degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
                                transmission_rate = 0.25,
                                infectiousness_rate = 0.1,
                                recovery_rate = 0.25,
@@ -286,7 +291,7 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
     names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
 
     print(jsonlite::toJSON(
-      list(state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t)),
+      list(state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t), simulation_id = simulation_id),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
