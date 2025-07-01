@@ -16,13 +16,33 @@ model_reference <- function(
     seed_infected = seed_infected
   )
 
-  # setup initial values
-  initial_values <- c(
-    S = population_size * (1 - seed_infected),
-    E = population_size * seed_infected,
-    I = 0,
-    R = 0
+  jacobian <- matrix(
+    c(
+      -infectiousness_rate, transmission_rate, 0,
+      infectiousness_rate, -recovery_rate, 0,
+      0, recovery_rate, 0
+    ),
+    byrow = TRUE,
+    nrow = 3
   )
+  dfe <- rep(0, 3)
+  # eigensystem of linearization in disease free state
+  es <- eigen(jacobian)
+
+  if (sum(Re(es$values) > 0) == 1) {
+    # if there is exactly one unstable eigenvector
+    es1 <- Re(es$vectors[, Re(es$values) > 0])
+  } else if (sum(Re(es$values) > 0) > 1) {
+    es1 <- Re(es$vectors[, Re(es$values) > 0][, 1])
+  } else {
+    # unstable eigenvector is set to zero
+    es1 <- rep(0, 3)
+  }
+  # normalize eigenvector such that first element is -1
+  es1 <- es1 / es1[1]
+  # perturb DFE with unstable eigenvector
+  initial_values <- dfe + population_size * seed_infected * es1
+  names(initial_values) <- c("E", "I", "R")
 
   current_state <- initial_values
   for (t in seq(0, time_end, by = increment)) {
@@ -40,20 +60,21 @@ model_reference <- function(
       pretty = FALSE,
       auto_unbox = TRUE
     ))
-    current_state <- current_state[c("S", "E", "I", "R")]
+    current_state <- current_state[c("E", "I", "R")]
   }
 }
 
 .ode_model_reference <- function(t, current_state, params) {
   with(as.list(c(current_state, params)), {
     # ODEs
-    dS <- -transmission_rate * S * I / population_size
+    S <- population_size - E - I - R
     dE <- transmission_rate * S * I / population_size - infectiousness_rate * E
     dI <- infectiousness_rate * E - recovery_rate * I
     dR <- recovery_rate * I
     # output
-    return(list(c(dS, dE, dI, dR),
-                incidence = transmission_rate * S * I / population_size
+    return(list(c(dE, dI, dR),
+                c(S = S,
+                incidence = transmission_rate * S * I / population_size)
     ))
   })
 }
