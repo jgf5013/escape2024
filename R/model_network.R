@@ -139,7 +139,8 @@ model_network_sir <- function(simulation_id,
     print(jsonlite::toJSON(
       list(state = as.list(transmission_params$population_size * current_state[c("S", "I", "R", "incidence")]),
            time = unname(t),
-           simulation_id = simulation_id),
+           # TODO model_reference, model_network + degree
+           model_type = paste0("model_network", degree_distribution)),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
@@ -290,7 +291,11 @@ model_network_seir <- function(simulation_id,
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
     names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
     print(jsonlite::toJSON(
-      list(state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t), simulation_id = simulation_id),
+      list(
+        state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
+        time = unname(t),
+        model_type = paste0("model_network_", degree_distribution)
+        ),
       pretty = FALSE,
       auto_unbox = TRUE
     ))

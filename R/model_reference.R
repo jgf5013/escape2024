@@ -60,7 +60,11 @@ model_reference <- function(
     names(current_state) <- c("E", "I", "R", "S", "incidence")
 
     print(jsonlite::toJSON(
-      list(state = as.list(current_state), time = unname(t), simulation_id = simulation_id),
+      list(
+        state = as.list(current_state),
+        time = unname(t),
+        model_type = "model_reference"
+        ),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
