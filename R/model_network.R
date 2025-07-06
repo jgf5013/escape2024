@@ -129,7 +129,7 @@ model_network_sir <- function(simulation_id,
   for (t in seq(0, time_end, by = increment)) {
     step_result <- PBSddesolve::dde(
       y = initial_values,
-      times = 0:time_end,
+      times = c(t, t + increment),
       func = .ode_model_network_sir,
       parms = params
     )
@@ -279,17 +279,16 @@ model_network_seir <- function(simulation_id,
 
   # simulate outbreak
   current_state <- initial_values
+
   for (t in seq(0, time_end, by = increment)) {
     step_result <- PBSddesolve::dde(
       y = initial_values,
-      times = 0:time_end,
+      times = c(t, t + increment),
       func = .ode_model_network_seir,
       parms = params
     )
-
     current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
     names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
-
     print(jsonlite::toJSON(
       list(state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]), time = unname(t), simulation_id = simulation_id),
       pretty = FALSE,
