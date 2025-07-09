@@ -1,10 +1,23 @@
+#' Title
+#'
+#' @param simulation_id
+#' @param transmission_rate
+#' @param infectiousness_rate
+#' @param recovery_rate
+#' @param time_end
+#' @param increment
+#' @param population_size
+#' @param seed_infected
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 model_reference <- function(
     simulation_id,
     transmission_rate = 0.25,
     infectiousness_rate = 0.25,
     recovery_rate = 0.2,
-    time_end = 400,
-    increment = 1,
     population_size = 20E6,
     seed_infected = 1E-3) {
   # setup parameters
@@ -26,30 +39,13 @@ model_reference <- function(
     nrow = 3
   )
   dfe <- rep(0, 3)
-  # eigensystem of linearization in disease free state
-  es <- eigen(jacobian)
-
-  if (sum(Re(es$values) > 0) == 1) {
-    # if there is exactly one unstable eigenvector
-    es1 <- Re(es$vectors[, Re(es$values) > 0])
-    # normalize eigenvector such that first element is -1
-    es1 <- es1 / es1[1]
-  } else if (sum(Re(es$values) > 0) > 1) {
-    es1 <- Re(es$vectors[, Re(es$values) > 0][, 1])
-    # normalize eigenvector such that first element is -1
-    es1 <- es1 / es1[1]
-  } else {
-    # unstable eigenvector is set to zero
-    es1 <- rep(0, 3)
-  }
-
-  # perturb DFE with unstable eigenvector
-  initial_values <- dfe + population_size * seed_infected * es1
+  initial_values <- calculate_initial_values(jacobian, dfe, 3, 1, population_size * seed_infected)
   names(initial_values) <- c("E", "I", "R")
+  return(initial_values)
+}
 
-  current_state <- initial_values
 
-  for (t in seq(0, time_end, by = increment)) {
+simulate_outbreak_seir_reference <- function(t, increment, current_state, params) {
     step_result <- PBSddesolve::dde(
       y = current_state,
       times = c(t, t + increment),
@@ -64,14 +60,24 @@ model_reference <- function(
         state = as.list(current_state),
         time = unname(t),
         model_type = "model_reference"
-        ),
+      ),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
     current_state <- current_state[c("E", "I", "R")]
-  }
 }
 
+
+#' Title
+#'
+#' @param t
+#' @param current_state
+#' @param params
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 .ode_model_reference <- function(t, current_state, params) {
   with(as.list(c(current_state, params)), {
     S <- population_size - E - I - R

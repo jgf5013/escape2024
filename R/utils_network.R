@@ -272,3 +272,20 @@ var_degree <- function(...) {
   }
   return(var)
 }
+
+
+#' Title
+#'
+#' @param .degree
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+mean_excess_degree <- function(.degree) {
+  var = var_degree(.degree)
+  avg = mean_degree(.degree)
+  c_degree = (var + avg^2 - avg) / avg
+  return(c_degree)
+}
+

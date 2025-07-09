@@ -81,8 +81,6 @@ model_network_sir <- function(simulation_id,
     degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
                               transmission_rate = 0.25,
                               recovery_rate = 0.25,
-                              time_end = 400,
-                              increment = 1,
                               population_size = 20E6,
                               seed_infected = 1E-3, ...) {
   degree_params <- list(...) |>
@@ -106,7 +104,7 @@ model_network_sir <- function(simulation_id,
     stop("to be implemented")
   }
 
-  degree_params <- c(degree_distribution = degree_distribution, degree_params)
+  degree_params <- c(list(degree_distribution = degree_distribution), degree_params)
 
   transmission_params <- list(
     transmission_rate = transmission_rate,
@@ -126,9 +124,24 @@ model_network_sir <- function(simulation_id,
 
   # simulate outbreak
   current_state <- initial_values
-  for (t in seq(0, time_end, by = increment)) {
+  return(current_state)
+}
+
+
+#' Title
+#'
+#' @param time_end
+#' @param increment
+#' @param current_state
+#' @param params
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+simulate_outbreak_sir_network <- function(t, increment, current_state, params) {
     step_result <- PBSddesolve::dde(
-      y = initial_values,
+      y = current_state,
       times = c(t, t + increment),
       func = .ode_model_network_sir,
       parms = params
@@ -137,17 +150,15 @@ model_network_sir <- function(simulation_id,
     names(current_state) <- c("xbar", "R", "incidence", "S", "I")
 
     print(jsonlite::toJSON(
-      list(state = as.list(transmission_params$population_size * current_state[c("S", "I", "R", "incidence")]),
+      list(state = as.list(params$population_size * current_state[c("S", "I", "R", "incidence")]),
            time = unname(t),
            # TODO model_reference, model_network + degree
-           model_type = paste0("model_network", degree_distribution)),
+           model_type = paste0("model_network", params$degree_distribution)),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
     current_state <- current_state[c("xbar", "R")]
-  }
 }
-
 
 #' Title
 #'
@@ -194,12 +205,11 @@ model_network_seir <- function(simulation_id,
                                transmission_rate = 0.25,
                                infectiousness_rate = 0.1,
                                recovery_rate = 0.25,
-                               time_end = 400,
-                               increment = 1,
                                population_size = 20E6,
                                seed_infected = 1E-3, ...) {
   degree_params <- list(...) |>
     unlist(recursive = FALSE)
+
   if (degree_distribution == "poisson") {
     stopifnot("lambda" %in% names(degree_params))
   } else if (degree_distribution == "negative_binomial") {
@@ -219,8 +229,7 @@ model_network_seir <- function(simulation_id,
     stop("to be implemented")
   }
 
-  degree_params <- c(degree_distribution = degree_distribution, degree_params)
-
+  degree_params <- c(list(degree_distribution = degree_distribution), degree_params)
   transmission_params <- list(
     transmission_rate = transmission_rate,
     infectiousness_rate = infectiousness_rate,
@@ -228,20 +237,17 @@ model_network_seir <- function(simulation_id,
     population_size = population_size,
     seed_infected = seed_infected
   )
-
   f_inf <- .kernel_captial_curly_f_inf_limit(
     infection = "SEIR",
     transmission_rate,
     infectiousness_rate,
     recovery_rate
   )
-
   params <- c(
     transmission_params,
     degree_params,
     f_inf = f_inf
   )
-
   # linearization in disease free steady state
   jacobian <- matrix(
     c(
@@ -255,35 +261,29 @@ model_network_seir <- function(simulation_id,
     ),
     byrow = TRUE, nrow = 7
   )
-
   # disease free steady state
   dfe <- c(1, 1, 0, 0, 0, 0, 0)
-  # eigensystem of linearization in disease free state
-  es <- eigen(jacobian)
 
-  if (sum(Re(es$values) > 0) == 1) {
-    # if there is exactly one unstable eigenvector
-    es1 <- Re(es$vectors[, Re(es$values) > 0])
-  } else if (sum(Re(es$values) > 0) > 1) {
-    es1 <- Re(es$vectors[, Re(es$values) > 0][, 1])
-  } else {
-    # unstable eigenvector is set to zero
-    es1 <- c(0, 0, 0, 0)
-  }
-  # normalize eigenvector such that first element is -1
-  es1 <- es1 / es1[5]
-  # perturb DFE with unstable eigenvector
-  perturb <- dfe + seed_infected * es1
-
-  initial_values <- perturb
+  initial_values <- calculate_initial_values(jacobian, dfe, 7, 5, seed_infected)
   names(initial_values) <- c("xbar", "xS", "xE", "xI", "E", "I", "R")
+  return(initial_values)
+}
 
-  # simulate outbreak
-  current_state <- initial_values
 
-  for (t in seq(0, time_end, by = increment)) {
+#' Title
+#'
+#' @param time_end
+#' @param increment
+#' @param current_state
+#' @param params
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+simulate_outbreak_seir_network <- function(t, increment, current_state, params) {
     step_result <- PBSddesolve::dde(
-      y = initial_values,
+      y = current_state,
       times = c(t, t + increment),
       func = .ode_model_network_seir,
       parms = params
@@ -292,15 +292,14 @@ model_network_seir <- function(simulation_id,
     names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
     print(jsonlite::toJSON(
       list(
-        state = as.list(transmission_params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
+        state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
         time = unname(t),
-        model_type = paste0("model_network_", degree_distribution)
-        ),
+        model_type = paste0("model_network_", params$degree_distribution)
+      ),
       pretty = FALSE,
       auto_unbox = TRUE
     ))
     current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
-  }
 }
 
 
