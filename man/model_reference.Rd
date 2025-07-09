@@ -5,11 +5,10 @@
 \title{Title}
 \usage{
 model_reference(
+  simulation_id,
   transmission_rate = 0.25,
   infectiousness_rate = 0.25,
   recovery_rate = 0.2,
-  time_end = 400,
-  increment = 1,
   population_size = 2e+07,
   seed_infected = 0.001
 )
