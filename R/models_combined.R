@@ -24,8 +24,8 @@ models_combined <- function(simulation_id, time_end, increment, params_p, params
     c(list(simulation_id = simulation_id), params_reference)
   )
   for (t in seq(0, time_end, by = increment)) {
-    current_state_poisson <- simulate_outbreak_seir_network(t, increment, current_state_network_p, params_p)
-    current_state_nb <- simulate_outbreak_seir_network(t, increment, current_state_network_nb, params_nb)
+    current_state_network_p <- simulate_outbreak_seir_network(t, increment, current_state_network_p, params_p)
+    current_state_network_nb <- simulate_outbreak_seir_network(t, increment, current_state_network_nb, params_nb)
     current_state_reference <- simulate_outbreak_seir_reference(t, increment, current_state_reference, params_reference)
   }
 }
