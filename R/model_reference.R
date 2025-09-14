@@ -1,6 +1,5 @@
 #' Title
 #'
-#' @param simulation_id
 #' @param transmission_rate
 #' @param infectiousness_rate
 #' @param recovery_rate
@@ -14,7 +13,6 @@
 #'
 #' @examples
 model_reference <- function(
-    simulation_id,
     transmission_rate = 0.25,
     infectiousness_rate = 0.25,
     recovery_rate = 0.2,

@@ -5,7 +5,6 @@
 \title{Title}
 \usage{
 model_network_sir(
-  simulation_id,
   degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
   transmission_rate = 0.25,
   recovery_rate = 0.25,

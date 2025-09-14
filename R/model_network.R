@@ -16,7 +16,6 @@
 #'
 #' @examples
 model_network <- function(
-    simulation_id,
     degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
     infection = c("SIR", "SEIR"),
     transmission_rate = 1.25,
@@ -32,7 +31,6 @@ model_network <- function(
   }
   if (infection == "SIR") {
     data <- model_network_sir(
-      simulation_id = simulation_id,
       degree_distribution = degree_distribution,
       transmission_rate = transmission_rate,
       recovery_rate = recovery_rate,
@@ -44,7 +42,6 @@ model_network <- function(
     )
   } else if (infection == "SEIR") {
     data <- model_network_seir(
-      simulation_id = simulation_id,
       degree_distribution = degree_distribution,
       transmission_rate = transmission_rate,
       infectiousness_rate = infectiousness_rate,
@@ -77,12 +74,12 @@ model_network <- function(
 #' @export
 #'
 #' @examples
-model_network_sir <- function(simulation_id,
+model_network_sir <- function(
     degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
-                              transmission_rate = 0.25,
-                              recovery_rate = 0.25,
-                              population_size = 20E6,
-                              seed_infected = 1E-3, ...) {
+    transmission_rate = 0.25,
+    recovery_rate = 0.25,
+    population_size = 20E6,
+    seed_infected = 1E-3, ...) {
   degree_params <- list(...) |>
     unlist(recursive = FALSE)
   if (degree_distribution == "poisson") {
@@ -140,24 +137,26 @@ model_network_sir <- function(simulation_id,
 #'
 #' @examples
 simulate_outbreak_sir_network <- function(t, increment, current_state, params) {
-    step_result <- PBSddesolve::dde(
-      y = current_state,
-      times = c(t, t + increment),
-      func = .ode_model_network_sir,
-      parms = params
-    )
-    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
-    names(current_state) <- c("xbar", "R", "incidence", "S", "I")
+  step_result <- PBSddesolve::dde(
+    y = current_state,
+    times = c(t, t + increment),
+    func = .ode_model_network_sir,
+    parms = params
+  )
+  current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
+  names(current_state) <- c("xbar", "R", "incidence", "S", "I")
 
-    print(jsonlite::toJSON(
-      list(state = as.list(params$population_size * current_state[c("S", "I", "R", "incidence")]),
-           time = unname(t),
-           # TODO model_reference, model_network + degree
-           model_type = paste0("model_network", params$degree_distribution)),
-      pretty = FALSE,
-      auto_unbox = TRUE
-    ))
-    current_state <- current_state[c("xbar", "R")]
+  print(jsonlite::toJSON(
+    list(
+      state = as.list(params$population_size * current_state[c("S", "I", "R", "incidence")]),
+      time = unname(t),
+      # TODO model_reference, model_network + degree
+      model_type = paste0("model_network", params$degree_distribution)
+    ),
+    pretty = FALSE,
+    auto_unbox = TRUE
+  ))
+  current_state <- current_state[c("xbar", "R")]
 }
 
 #' Title
@@ -176,9 +175,11 @@ simulate_outbreak_sir_network <- function(t, increment, current_state, params) {
     dR <- recovery_rate * (1 - probability_generating_function(x = xbar, params) - R)
     return(list(
       c(dxbar, dR),
-      c(incidence = -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar,
+      c(
+        incidence = -helper_g_function(x = xbar, params) * mean_degree(params) * dxbar,
         S = probability_generating_function(x = xbar, params),
-        I = 1 - probability_generating_function(x = xbar, params) - R)
+        I = 1 - probability_generating_function(x = xbar, params) - R
+      )
     ))
   })
 }
@@ -200,8 +201,7 @@ simulate_outbreak_sir_network <- function(t, increment, current_state, params) {
 #' @export
 #'
 #' @examples
-model_network_seir <- function(simulation_id,
-                               degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
+model_network_seir <- function(degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
                                transmission_rate = 0.25,
                                infectiousness_rate = 0.1,
                                recovery_rate = 0.25,
@@ -282,24 +282,24 @@ model_network_seir <- function(simulation_id,
 #'
 #' @examples
 simulate_outbreak_seir_network <- function(t, increment, current_state, params) {
-    step_result <- PBSddesolve::dde(
-      y = current_state,
-      times = c(t, t + increment),
-      func = .ode_model_network_seir,
-      parms = params
-    )
-    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
-    names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
-    print(jsonlite::toJSON(
-      list(
-        state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
-        time = unname(t),
-        model_type = paste0("model_network_", params$degree_distribution)
-      ),
-      pretty = FALSE,
-      auto_unbox = TRUE
-    ))
-    current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
+  step_result <- PBSddesolve::dde(
+    y = current_state,
+    times = c(t, t + increment),
+    func = .ode_model_network_seir,
+    parms = params
+  )
+  current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
+  names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
+  print(jsonlite::toJSON(
+    list(
+      state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
+      time = unname(t),
+      model_type = paste0("model_network_", params$degree_distribution)
+    ),
+    pretty = FALSE,
+    auto_unbox = TRUE
+  ))
+  current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
 }
 
 

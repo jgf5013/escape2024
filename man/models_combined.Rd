@@ -4,14 +4,7 @@
 \alias{models_combined}
 \title{Title}
 \usage{
-models_combined(
-  simulation_id,
-  time_end,
-  increment,
-  params_p,
-  params_nb,
-  params_reference
-)
+models_combined(time_end, increment, params_p, params_nb, params_reference)
 }
 \arguments{
 \item{params_reference}{}

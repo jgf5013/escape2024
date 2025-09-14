@@ -5,7 +5,6 @@
 \title{Title}
 \usage{
 model_network_seir(
-  simulation_id,
   degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
   transmission_rate = 0.25,
   infectiousness_rate = 0.1,

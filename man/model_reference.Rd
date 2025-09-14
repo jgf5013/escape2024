@@ -5,7 +5,6 @@
 \title{Title}
 \usage{
 model_reference(
-  simulation_id,
   transmission_rate = 0.25,
   infectiousness_rate = 0.25,
   recovery_rate = 0.2,

@@ -5,7 +5,6 @@
 \title{Title}
 \usage{
 model_network(
-  simulation_id,
   degree_distribution = c("poisson", "negative_binomial", "constant", "geometric"),
   infection = c("SIR", "SEIR"),
   transmission_rate = 1.25,

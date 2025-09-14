@@ -10,18 +10,18 @@
 #' @export
 #'
 #' @examples
-models_combined <- function(simulation_id, time_end, increment, params_p, params_nb, params_reference) {
+models_combined <- function(time_end, increment, params_p, params_nb, params_reference) {
   current_state_network_nb <- do.call(
     model_network_seir,
-    c(list(simulation_id = simulation_id), params_nb)
+    params_nb
   )
   current_state_network_p <- do.call(
     model_network_seir,
-    c(list(simulation_id = simulation_id), params_p)
+    params_p
   )
   current_state_reference <- do.call(
     model_reference,
-    c(list(simulation_id = simulation_id), params_reference)
+    params_reference
   )
   for (t in seq(0, time_end, by = increment)) {
     current_state_network_p <- simulate_outbreak_seir_network(t, increment, current_state_network_p, params_p)
