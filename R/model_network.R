@@ -302,6 +302,7 @@ simulate_outbreak_seir_network <- function(t, increment, current_state, params) 
         auto_unbox = TRUE
       ))
       current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
+      return(current_state)
     },
     error = function(e) {
       print(jsonlite::toJSON(

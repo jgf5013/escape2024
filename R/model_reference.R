@@ -50,19 +50,21 @@ simulate_outbreak_seir_reference <- function(t, increment, current_state, params
     func = .ode_model_reference,
     parms = params
   )
-  current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
-  names(current_state) <- c("E", "I", "R", "S", "incidence")
+  total <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
+  names(total) <- c("E", "I", "R", "S", "incidence")
 
   print(jsonlite::toJSON(
     list(
-      state = as.list(current_state),
+      state = as.list(total),
       time = unname(t),
       model_type = "model_reference"
     ),
     pretty = FALSE,
     auto_unbox = TRUE
   ))
-  current_state <- current_state[c("E", "I", "R")]
+  current_state <- total[c("E", "I", "R")]
+  return(list(current_state = current_state,
+              total = total))
 }
 
 
