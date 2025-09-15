@@ -44,25 +44,25 @@ model_reference <- function(
 
 
 simulate_outbreak_seir_reference <- function(t, increment, current_state, params) {
-    step_result <- PBSddesolve::dde(
-      y = current_state,
-      times = c(t, t + increment),
-      func = .ode_model_reference,
-      parms = params
-    )
-    current_state <- as.numeric(step_result[nrow(step_result), -1])  # Exclude time column
-    names(current_state) <- c("E", "I", "R", "S", "incidence")
+  step_result <- PBSddesolve::dde(
+    y = current_state,
+    times = c(t, t + increment),
+    func = .ode_model_reference,
+    parms = params
+  )
+  current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
+  names(current_state) <- c("E", "I", "R", "S", "incidence")
 
-    print(jsonlite::toJSON(
-      list(
-        state = as.list(current_state),
-        time = unname(t),
-        model_type = "model_reference"
-      ),
-      pretty = FALSE,
-      auto_unbox = TRUE
-    ))
-    current_state <- current_state[c("E", "I", "R")]
+  print(jsonlite::toJSON(
+    list(
+      state = as.list(current_state),
+      time = unname(t),
+      model_type = "model_reference"
+    ),
+    pretty = FALSE,
+    auto_unbox = TRUE
+  ))
+  current_state <- current_state[c("E", "I", "R")]
 }
 
 

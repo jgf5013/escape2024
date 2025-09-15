@@ -28,4 +28,9 @@ models_combined <- function(time_end, increment, params_p, params_nb, params_ref
     current_state_network_nb <- simulate_outbreak_seir_network(t, increment, current_state_network_nb, params_nb)
     current_state_reference <- simulate_outbreak_seir_reference(t, increment, current_state_reference, params_reference)
   }
+  return(list(
+    network_poisson = current_state_network_p,
+    network_nb = current_state_network_nb,
+    reference = current_state_reference
+  ))
 }

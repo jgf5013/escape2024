@@ -282,24 +282,38 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
 #'
 #' @examples
 simulate_outbreak_seir_network <- function(t, increment, current_state, params) {
-  step_result <- PBSddesolve::dde(
-    y = current_state,
-    times = c(t, t + increment),
-    func = .ode_model_network_seir,
-    parms = params
+  tryCatch(
+    {
+      step_result <- PBSddesolve::dde(
+        y = current_state,
+        times = c(t, t + increment),
+        func = .ode_model_network_seir,
+        parms = params
+      )
+      current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
+      names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
+      print(jsonlite::toJSON(
+        list(
+          state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
+          time = unname(t),
+          model_type = paste0("model_network_", params$degree_distribution)
+        ),
+        pretty = FALSE,
+        auto_unbox = TRUE
+      ))
+      current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
+    },
+    error = function(e) {
+      print(jsonlite::toJSON(
+        list(
+          state = list(S = NaN, E = NaN, I = NaN, R = NaN),
+          model_type = paste0("model_network_", params$degree_distribution)
+        ),
+        pretty = FALSE,
+        auto_unbox = TRUE
+      ))
+    }
   )
-  current_state <- as.numeric(step_result[nrow(step_result), -1]) # Exclude time column
-  names(current_state) <- c("xbar", "xS", "xE", "xI", "E", "I", "R", "S", "incidence")
-  print(jsonlite::toJSON(
-    list(
-      state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
-      time = unname(t),
-      model_type = paste0("model_network_", params$degree_distribution)
-    ),
-    pretty = FALSE,
-    auto_unbox = TRUE
-  ))
-  current_state <- current_state[c("xbar", "xS", "xE", "xI", "E", "I", "R")]
 }
 
 
