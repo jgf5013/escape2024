@@ -43,6 +43,17 @@ model_reference <- function(
 }
 
 
+#' Title
+#'
+#' @param t
+#' @param increment
+#' @param current_state
+#' @param params
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 simulate_outbreak_seir_reference <- function(t, increment, current_state, params) {
   step_result <- PBSddesolve::dde(
     y = current_state,
