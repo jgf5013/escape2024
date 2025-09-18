@@ -308,7 +308,8 @@ simulate_outbreak_seir_network <- function(t, increment, current_state, params) 
       print(jsonlite::toJSON(
         list(
           state = list(S = NaN, E = NaN, I = NaN, R = NaN),
-          model_type = paste0("model_network_", params$degree_distribution)
+          model_type = paste0("model_network_", params$degree_distribution),
+          status =  "ERROR"
         ),
         pretty = FALSE,
         auto_unbox = TRUE
