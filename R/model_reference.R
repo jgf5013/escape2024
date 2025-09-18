@@ -54,7 +54,7 @@ model_reference <- function(
 #' @export
 #'
 #' @examples
-simulate_outbreak_seir_reference <- function(t, increment, current_state, params) {
+simulate_outbreak_seir_reference <- function(t, increment, current_state, params, status) {
   step_result <- PBSddesolve::dde(
     y = current_state,
     times = c(t, t + increment),
@@ -68,7 +68,8 @@ simulate_outbreak_seir_reference <- function(t, increment, current_state, params
     list(
       state = as.list(total),
       time = unname(t),
-      model_type = "model_reference"
+      model_type = "model_reference",
+      status = status
     ),
     pretty = FALSE,
     auto_unbox = TRUE

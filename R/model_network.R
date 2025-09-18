@@ -281,7 +281,7 @@ model_network_seir <- function(degree_distribution = c("poisson", "negative_bino
 #' @export
 #'
 #' @examples
-simulate_outbreak_seir_network <- function(t, increment, current_state, params) {
+simulate_outbreak_seir_network <- function(t, increment, current_state, params, status) {
   tryCatch(
     {
       step_result <- PBSddesolve::dde(
@@ -296,7 +296,8 @@ simulate_outbreak_seir_network <- function(t, increment, current_state, params) 
         list(
           state = as.list(params$population_size * current_state[c("S", "E", "I", "R", "incidence")]),
           time = unname(t),
-          model_type = paste0("model_network_", params$degree_distribution)
+          model_type = paste0("model_network_", params$degree_distribution),
+          status = status
         ),
         pretty = FALSE,
         auto_unbox = TRUE
