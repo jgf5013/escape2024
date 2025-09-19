@@ -10,7 +10,7 @@
 #' @export
 #'
 #' @examples
-models_combined <- function(time_end, increment, params_p, params_nb, params_reference) {
+models_combined <- function(time_end, increment, params_p, params_nb, params_reference, status) {
   current_state_network_nb <- do.call(
     model_network_seir,
     params_nb
@@ -24,9 +24,9 @@ models_combined <- function(time_end, increment, params_p, params_nb, params_ref
     params_reference
   )
   for (t in seq(0, time_end, by = increment)) {
-    current_state_network_p <- simulate_outbreak_seir_network(t, increment, current_state_network_p, params_p)
-    current_state_network_nb <- simulate_outbreak_seir_network(t, increment, current_state_network_nb, params_nb)
-    current_state_reference <- simulate_outbreak_seir_reference(t, increment, current_state_reference, params_reference)$current_state
+    current_state_network_p <- simulate_outbreak_seir_network(t, increment, current_state_network_p, params_p, status)
+    current_state_network_nb <- simulate_outbreak_seir_network(t, increment, current_state_network_nb, params_nb, status)
+    current_state_reference <- simulate_outbreak_seir_reference(t, increment, current_state_reference, params_reference, status)$current_state
   }
   return(list(
     network_poisson = current_state_network_p,
